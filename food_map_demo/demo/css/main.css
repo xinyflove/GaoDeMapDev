@@ -1,0 +1,7 @@
+.amap-marker-label {
+  font-size: 13px;
+  border: 1px solid orange;
+  /* background-color: transparent; */
+  border-radius: 10px 0 0 0;
+  color: #690441;
+}
