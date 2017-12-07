@@ -1,5 +1,5 @@
-var currentHeight = $(window).height();//当前浏览器高度
-$('#container').height(currentHeight);
+//var currentHeight = $(window).height();//当前浏览器高度
+
 
 var map, geolocationMarker, currentPosition;
 var supplierMarkers = [];
@@ -9,7 +9,7 @@ map = new AMap.Map('container',{
 
 AMap.plugin(['AMap.ToolBar','AMap.Geolocation'],
   function(){
-    map.addControl(new AMap.ToolBar());//集成了缩放、平移、定位等功能按钮在内的组合控件
+    //map.addControl(new AMap.ToolBar());//集成了缩放、平移、定位等功能按钮在内的组合控件
 
     /*定位操作开始*/
     var geolocationObj = new AMap.Geolocation({
@@ -60,6 +60,7 @@ map.on("hotspotclick", function(e) {
  * @return {[type]}      [description]
  */
 function getGeocodernAddress(posi){
+	getSupplierDataEvent();
   var geocoder = new AMap.Geocoder({
     radius: 1000,
     extensions: "all"
@@ -106,7 +107,9 @@ function createLocationMarker(posi)
       size: new AMap.Size(31, 54),  //图标大小
       image: "img/icon_location.png",
       imageOffset: new AMap.Pixel(0, 0)
-    })
+    }),
+	offset: new AMap.Pixel(-15, -48),
+	zIndex: 110,
   });
 }
 
@@ -126,6 +129,10 @@ function getSupplierList(posi, name)
     data: {posi:_posi,name:name},
     dataType: "json",
     success: function(data) {
+	  $('#showListUl').empty();
+	  createSupplier(data);
+	  $('#supplierMore').empty();
+	  createSupplierMore(data);
       //启动时一次加载所有依赖的组件
       AMapUI.loadUI([
         'overlay/SimpleMarker',//引入SimpleMarker，loadUI的路径参数为模块名中 'ui/' 之后的部分
@@ -201,16 +208,71 @@ var createSimpleMarker = function(SimpleMarker, data) {
  * @return {[type]}   [description]
  */
 function markerClick(e){
-  $('#container').height(currentHeight-$('#shopInfoBox').height());
-  $('.shop-info-name').text(e.target.data.name);
-  $('.shop-info-img img').prop('src', e.target.data.img);
-  var priceDom = '￥' + e.target.data.price;
+  var _supplierDetailHeight = $('#supplierDetail').height();
+  $('#container').height(currentHeight-_supplierDetailHeight);
+  $('#detailName').text(e.target.data.name);
+  $('#detailImg').prop('src', e.target.data.img);
+  var priceDom = '<span>￥' + e.target.data.price + '</span>';
   if(e.target.data.del) priceDom += '<del>￥' + e.target.data.del
   
-  $('.shop-info-price').html(priceDom);
-  $('.shop-info-addr').text(e.target.data.addr);
-  //console.log(e);
+  $('#detailPrice').html(priceDom);
+  $('#detailAddr').text(e.target.data.addr);
+  
+  $(".sidebar-right").show();
+  $(".foodmapFooter").hide();
+  $("#supplierDetail").show();
   //map.setCenter(e.target.getPosition());
 }
 
+function createSupplier(list){
+	var _html = '';
+	for(idx in list){
+		_html += '<li>';
+		_html += '<div class="mapListfooter-list-left">';
+		_html += '<img src="'+list[idx].img+'"/>';
+		_html += '</div>';
+		_html += '<div class="mapListfooter-list-right">';
+		_html += '<h2>'+list[idx].name+'</h2>';
+		var _delPrice = '';
+		if(list[idx].del) _delPrice = '<del>￥'+list[idx].del+'</del>';
+		_html += '<p class="map-listprice"><span>￥'+list[idx].price+'</span>'+_delPrice+'</p>';
+		_html += '<p class="map-liststate">主播直播中</p>';
+		_html += '<p class="map-listdistance">'+list[idx].addr+'</p>';
+		_html += '</div>';
+		_html += '</li>';
+	}
+					
+	$('#showListUl').append(_html);
+}
 
+function createSupplierMore(list){
+	var _html = '';
+	for(idx in list){
+		_html += '<li>';
+		_html += '<div class="mapend-list-left">';
+		_html += '<img src="'+list[idx].img+'"/>';
+		_html += '</div>';
+		_html += '<div class="mapend-list-right">';
+		_html += '<h2>'+list[idx].name+'</h2>';
+		var _delPrice = '';
+		if(list[idx].del) _delPrice = '<del>￥'+list[idx].del+'</del>';
+		_html += '<p class="mapend-listprice"><span>￥'+list[idx].price+'</span>'+_delPrice+'</p>';
+		_html += '<p class="mapend-liststate">主播直播中</p>';
+		_html += '<p class="mapend-listdistance">'+list[idx].addr+'</p>';
+		_html += '</div>';
+		_html += '</li>';
+	}
+	
+	$('#supplierMore').append(_html);
+}
+
+function getSupplierDataEvent(){
+	$(".mapend").hide();
+	$(".foodmapFooter").show();
+	$(".map-search").show();
+	$("#container").show();
+	$(".sidebar-right").show();
+	$("#supplierDetail").hide();
+	Height = $("body").height()-$(".foodmapFooter").height();
+	$("#container").css("height",Height+"px");
+}

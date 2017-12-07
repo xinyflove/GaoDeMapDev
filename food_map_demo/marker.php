@@ -39,7 +39,7 @@ function getGridLngLats($center)
 		$data[] = array(
 			"name" => "和谐广场".$k,
 			"center" => $v,
-			'img' => 'img/food_01.jpg',
+			'img' => 'img/tupian.png',
 			'price' => 120,
 			'del' => 100,
 			'addr' => $_GET['name'].'内'.$k.'米',
