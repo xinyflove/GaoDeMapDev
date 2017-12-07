@@ -1,5 +1,5 @@
-//var currentHeight = $(window).height();//当前浏览器高度
-
+var currentHeight = $(window).height();//当前浏览器高度
+var showListUl = $('#target');
 
 var map, geolocationMarker, currentPosition;
 var supplierMarkers = [];
@@ -129,7 +129,7 @@ function getSupplierList(posi, name)
     data: {posi:_posi,name:name},
     dataType: "json",
     success: function(data) {
-	  $('#showListUl').empty();
+	  showListUl.empty();
 	  createSupplier(data);
 	  $('#supplierMore').empty();
 	  createSupplierMore(data);
@@ -217,6 +217,7 @@ function markerClick(e){
   
   $('#detailPrice').html(priceDom);
   $('#detailAddr').text(e.target.data.addr);
+    $('#supplierDetail').data('sposi', e.target.data.center);
   
   $(".sidebar-right").show();
   $(".foodmapFooter").hide();
@@ -224,6 +225,10 @@ function markerClick(e){
   //map.setCenter(e.target.getPosition());
 }
 
+/**
+ * 创建供货商数据列表
+ * @param list
+ */
 function createSupplier(list){
 	var _html = '';
 	for(idx in list){
@@ -242,9 +247,13 @@ function createSupplier(list){
 		_html += '</li>';
 	}
 					
-	$('#showListUl').append(_html);
+	showListUl.append(_html);
 }
 
+/**
+ * 创建供货商数据更多列表
+ * @param list
+ */
 function createSupplierMore(list){
 	var _html = '';
 	for(idx in list){
@@ -266,6 +275,9 @@ function createSupplierMore(list){
 	$('#supplierMore').append(_html);
 }
 
+/**
+ * 获取供货商数据事件
+ */
 function getSupplierDataEvent(){
 	$(".mapend").hide();
 	$(".foodmapFooter").show();
@@ -275,4 +287,34 @@ function getSupplierDataEvent(){
 	$("#supplierDetail").hide();
 	Height = $("body").height()-$(".foodmapFooter").height();
 	$("#container").css("height",Height+"px");
+}
+
+function createNavPath() {
+    var sPosi = $('#supplierDetail').data('sposi').split(',');
+
+    //步行导航
+    AMap.service(["AMap.Walking"], function() {
+        var MWalk = new AMap.Walking({
+            map: map,
+            //panel: "panel"
+        }); //构造路线导航类
+
+
+
+        //根据起终点坐标规划步行路线
+        MWalk.search([currentPosition.lng,currentPosition.lat], [sPosi[0],sPosi[1]], function(status, result){
+            if(status == 'complete'){
+                console.log('路线规划成功!');
+            }
+            console.log(result);
+
+        });
+    });
+    AMap.service(["AMap.Walking"], function() {
+        var MWalk = new AMap.Walking({
+            map: map,
+            //panel: "panel"
+        }); //构造路线导航类
+        MWalk.setMap(null);
+    });
 }
