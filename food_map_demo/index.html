@@ -9,6 +9,7 @@
 		<link rel="stylesheet" type="text/css" href="css/public.css"/>
 		<link rel="stylesheet" type="text/css" href="css/915foodmap-all.css"/>
 		<link rel="stylesheet" type="text/css" href="css/915map-live.css"/>
+		<link rel="stylesheet" type="text/css" href="css/loaders.css"/>
 		<link rel="stylesheet" href="css/main.css">
 		
 		<style type="text/css">
@@ -16,6 +17,22 @@
 		</style>
 	</head>
 	<body>
+
+		<div class="wapper" id="loadBox">
+			<div class="loader">
+				<div class="loader-inner line-spin-fade-loader">
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+				</div>
+			</div>
+			<p>正在加载中，请稍后。。。</p>
+		</div>
 		
 		<!-- 地图展示区开始 -->
 		<div id="container" class="container"></div>
@@ -46,13 +63,13 @@
 		</div>
 		<!-- 搜索框结束 -->
 		
-		<!-- 展开更多结果开始 -->
+		<!-- 展开更多结果按钮开始 -->
 		<div class="foodmapFooter" id="showMoreBtn">点击展开更多结果</div>
-		<!-- 展开更多结果结束 -->
+		<!-- 展开更多结果按钮结束 -->
 		
 		<!-- 展示供货商列表开始 -->
-		<div class="mapListfooter">
-			<ul id="target" draggable="true"></ul>
+		<div class="mapListfooter" id="showListBox">
+			<ul id="target" draggable="true" class="supplier-list"></ul>
 		</div>
 		<!-- 展示供货商列表结束 -->
 		
@@ -63,9 +80,21 @@
 			</div>
 			<div class="mapend-screen">
 				<ul>
-					<li>全部分类</li>
-					<li>5000米</li>
-					<li>智能排序</li>
+					<li>
+						<select name="">
+							<option value="">全部分类</option>
+						</select>
+					</li>
+					<li>
+						<select name="">
+							<option value="">5000米</option>
+						</select>
+					</li>
+					<li>
+						<select name="">
+							<option value="">智能排序</option>
+						</select>
+					</li>
 				</ul>
 			</div>
 			<div class="mapend-banner">
@@ -73,26 +102,26 @@
 			</div>
 			<div class="mapend-list">
 				<div class="mapend-list-title">
-					<h2>当前位置：福林花园小区K区</h2>
-					<img src="img/shuaxin.png" alt="" />
+					<h2 id="locationInfo"></h2>
+					<img src="img/shuaxin.png" alt="" onclick="reGeolocation();" />
 				</div>
-				<ul id="supplierMore"></ul>
+				<ul id="supplierMore" class="supplier-list"></ul>
 			</div>
 		</div>
 		<!-- 展示供货商更多列表结束 -->
 		
 		<!-- 供货商详情开始 -->
-		<div class="mapLivefooter" id="supplierDetail" style="display: none;" data-sposi="">
+		<div class="mapLivefooter" id="supplierDetail" style="display: none;">
 			<div class="mapLivefooter-top">
 				<div class="mapLivefooter-top-left">
 					<img src="img/tupian.png" id="detailImg"/>
 				</div>
 				<div class="mapLivefooter-top-right">
-					<img src="img/rose.png" class="mapLivefooter-top-rightPosition"/>
-					<h2 id="detailName">天府烤鱼</h2>
-					<p class="map-liveprice" id="detailPrice"><span>￥120</span><del>￥100</del></p>
-					<p class="map-livestate">主播直播中</p>
-					<p class="map-livedistance" id="detailAddr">福林花园·距您 200米</p>
+					<img src="img/rose.png" class="mapLivefooter-top-rightPosition" onclick="javascript:createNavPath();"/>
+					<h2 id="detailName"></h2>
+					<p class="map-liveprice" id="detailPrice"></p>
+					<p class="map-livestate"></p>
+					<p class="map-livedistance" id="detailAddr"></p>
 				</div>
 			</div>
 			<div class="mapLivefooter-bottom">

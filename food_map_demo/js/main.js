@@ -1,58 +1,88 @@
 var currentHeight = $(window).height();//当前浏览器高度
-var showListUl = $('#target');
-
-var map, geolocationMarker, currentPosition;
-var supplierMarkers = [];
+var showListUl = $('#target');//显示供货商列表信息
+var supplierMore = $('#supplierMore');//显示更多供货商列表信息
+//地图对象、定位标注对象、当前位置、simpleMarker对象、simpleInfoWindow对象、定位对象
+var map, geolocationMarker, currentPosition,supplierPosition,simpleMarker,simpleInfoWindow,geolocationObj;
+var supplierMarkers = [];//供货商标注对象数组
 map = new AMap.Map('container',{
     zoom: 18,
 });
 
+//加载地图插件
 AMap.plugin(['AMap.ToolBar','AMap.Geolocation'],
-  function(){
-    //map.addControl(new AMap.ToolBar());//集成了缩放、平移、定位等功能按钮在内的组合控件
+    function(){
+        //map.addControl(new AMap.ToolBar());//集成了缩放、平移、定位等功能按钮在内的组合控件
 
-    /*定位操作开始*/
-    var geolocationObj = new AMap.Geolocation({
-      enableHighAccuracy: true,//是否使用高精度定位，默认:true
-      timeout: 10000,          //超过10秒后停止定位，默认：无穷大
-      buttonOffset: new AMap.Pixel(10, 20),//定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
-      zoomToAccuracy: false,      //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
-      buttonPosition:'LB'
+        clickGeolocation();//定位操作
+    }
+);
+
+//监听热点点击
+map.setStatus({isHotspot: true});
+map.on("hotspotclick", function(e) {
+    if (geolocationMarker) {
+        geolocationMarker.setMap(null);//移除上一个热点信息
+    }
+    geolocationMarker = new AMap.Marker({
+        position: e.lnglat,
+        map: map,
+    });
+    // 设置label标签
+    geolocationMarker.setLabel({//label默认蓝框白底左上角显示，样式className为：amap-marker-label
+        offset: new AMap.Pixel(20, 20),//修改label相对于maker的位置
+        content: '<div id="geolocationMarker">' + e.name + '</div>'
+    });
+    map.setCenter(e.lnglat);
+
+    getGeocodernAddress(e.lnglat);//获取定位位置获取位置地址信息
+});
+
+//启动时一次加载所有依赖的组件
+AMapUI.loadUI([
+        'overlay/SimpleMarker',//引入SimpleMarker，loadUI的路径参数为模块名中 'ui/' 之后的部分
+        'overlay/SimpleInfoWindow',//SimpleInfoWindow
+    ],
+    function(SimpleMarker, SimpleInfoWindow) {
+        //....引用加载的UI....
+        simpleMarker = SimpleMarker;
+        simpleInfoWindow = SimpleInfoWindow;
+    }
+);
+
+$(function () {
+    $('.supplier-list').on('click',"li",function(ev){
+        var markerId = $(this).data('markerid');
+        supplierInfoClick(supplierMarkers[markerId]);
+    });
+    $('.amap-geo').on('click',function () {
+        $('#loadBox').show();
+    })
+});
+
+/**
+ * 定位操作开始
+ */
+function clickGeolocation() {
+    $('#loadBox').show();
+    geolocationObj = new AMap.Geolocation({
+        enableHighAccuracy: true,//是否使用高精度定位，默认:true
+        timeout: 10000,          //超过10秒后停止定位，默认：无穷大
+        buttonOffset: new AMap.Pixel(10, 20),//定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
+        zoomToAccuracy: false,      //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
+        buttonPosition:'LB'
     });
     map.addControl(geolocationObj);//用来获取和展示用户主机所在的经纬度位置
     geolocationObj.getCurrentPosition();
-    AMap.event.addListener(geolocationObj, 'complete', function(data){//返回定位信息
-      currentPosition = data.position;//json类型
-
-      getGeocodernAddress(currentPosition);
+    //返回定位信息
+    AMap.event.addListener(geolocationObj, 'complete', function(data){
+        getGeocodernAddress(data.position);//获取定位位置获取位置地址信息
     });
-    AMap.event.addListener(geolocationObj, 'error', function(data){//返回定位出错信息
-      alert('定位失败');
+    //返回定位出错信息
+    AMap.event.addListener(geolocationObj, 'error', function(data){
+        $('#locationInfo').text('当前位置：定位失败');
+        alert('定位失败');
     });
-    /*定位操作结束*/
-  }
-);
-
-// 监听热点点击
-map.setStatus({isHotspot: true});
-map.on("hotspotclick", function(e) {
-  console.log(e.lnglat);
-  if (geolocationMarker) {
-    geolocationMarker.setMap(null);//移除上一个热点信息
-  }
-  geolocationMarker = new AMap.Marker({
-    position: e.lnglat,
-    map: map,
-  });
-  // 设置label标签
-  geolocationMarker.setLabel({//label默认蓝框白底左上角显示，样式className为：amap-marker-label
-      offset: new AMap.Pixel(20, 20),//修改label相对于maker的位置
-      content: '<div id="geolocationMarker">' + e.name + '</div>'
-  });
-  map.setCenter(e.lnglat);
-
-  getGeocodernAddress(e.lnglat);
-});
+}
 
 /**
  * 获取定位的地址信息
@@ -60,57 +90,59 @@ map.on("hotspotclick", function(e) {
  * @return {[type]}      [description]
  */
 function getGeocodernAddress(posi){
-	getSupplierDataEvent();
-  var geocoder = new AMap.Geocoder({
-    radius: 1000,
-    extensions: "all"
-  });        
-  geocoder.getAddress(posi, function(status, result) {
-      if(status === 'complete' && result.info === 'OK') {
-        var address = result.regeocode.addressComponent.building; //返回地址描述
-        console.log('当前定位信息');
-        console.log(result);
-        if(!address){
-          address = result.regeocode.pois[0].name;
-        }
-        if(!address) {
-          address = result.regeocode.formattedAddress;
-        }
-        
-        if(geolocationMarker) {
-          geolocationMarker.setMap(null);//移除上一个热点信息
-        }
-        geolocationMarker = createLocationMarker(posi);
-        // 设置label标签
-        geolocationMarker.setLabel({//label默认蓝框白底左上角显示，样式className为：amap-marker-label
-            offset: new AMap.Pixel(20, 20),//修改label相对于maker的位置
-            content: '<div id="geolocationMarker">' + address + '</div>'
-        });
+    currentPosition = posi;
+    getSupplierDataEvent();
+    var geocoder = new AMap.Geocoder({
+        radius: 1000,
+        extensions: "all"
+    });
+    geocoder.getAddress(posi, function(status, result) {
+        if(status === 'complete' && result.info === 'OK') {
+            var address = result.regeocode.addressComponent.building; //返回地址描述
+            console.log('当前定位信息');
+            console.log(result);
+            if(!address){
+                address = result.regeocode.pois[0].name;
+            }
+            if(!address) {
+                address = result.regeocode.formattedAddress;
+            }
 
-        //获取根据当前定位信息的供货商数据
-        getSupplierList(posi, address);
-      }
-  });
+            if(geolocationMarker) {
+                geolocationMarker.setMap(null);//移除上一个热点信息
+            }
+            geolocationMarker = createLocationMarker(posi);
+            // 设置label标签
+            geolocationMarker.setLabel({//label默认蓝框白底左上角显示，样式className为：amap-marker-label
+                offset: new AMap.Pixel(20, 20),//修改label相对于maker的位置
+                content: '<div id="geolocationMarker">' + address + '</div>'
+            });
+
+            //获取根据当前定位信息的供货商数据
+            getSupplierList(posi, address);
+            $('#locationInfo').text('当前位置：'+address);
+        }
+    });
 }
 
 /**
- * 生成公共marker方法
+ * 生成定位marker方法
  * @param  {[obj]} posi [description]
  * @return {[type]}      [description]
  */
 function createLocationMarker(posi)
 {
-  return new AMap.Marker({  //加点
-    map: map,
-    position: posi,
-    icon: new AMap.Icon({            
-      size: new AMap.Size(31, 54),  //图标大小
-      image: "img/icon_location.png",
-      imageOffset: new AMap.Pixel(0, 0)
-    }),
-	offset: new AMap.Pixel(-15, -48),
-	zIndex: 110,
-  });
+    return new AMap.Marker({  //加点
+        map: map,
+        position: posi,
+        icon: new AMap.Icon({
+            size: new AMap.Size(31, 54),  //图标大小
+            image: "img/icon_location.png",
+            imageOffset: new AMap.Pixel(0, 0)
+        }),
+        offset: new AMap.Pixel(-15, -48),
+        zIndex: 110,
+    });
 }
 
 /**
@@ -121,69 +153,65 @@ function createLocationMarker(posi)
  */
 function getSupplierList(posi, name)
 {
-  var _posi = [posi.lng, posi.lat].join(',')
+    var _posi = [posi.lng, posi.lat].join(',')
 
-  $.ajax({
-    type: "GET",
-    url: 'marker.php',
-    data: {posi:_posi,name:name},
-    dataType: "json",
-    success: function(data) {
-	  showListUl.empty();
-	  createSupplier(data);
-	  $('#supplierMore').empty();
-	  createSupplierMore(data);
-      //启动时一次加载所有依赖的组件
-      AMapUI.loadUI([
-        'overlay/SimpleMarker',//引入SimpleMarker，loadUI的路径参数为模块名中 'ui/' 之后的部分
-        'overlay/SimpleInfoWindow',//SimpleInfoWindow
-        ],
-        function(SimpleMarker, SimpleInfoWindow) {
-          //....引用加载的UI....
-          initPage(SimpleMarker, SimpleInfoWindow, data);//启动页面
-      });
+    $.ajax({
+        type: "GET",
+        url: 'marker.php',
+        data: {posi:_posi,name:name},
+        dataType: "json",
+        success: function(data) {
+            $('#loadBox').hide();
+            showListUl.empty();
+            supplierMore.empty();
 
-      //map.setFitView();//设置地图合适的视角
-    },
-    error: function(e) {
-      //...
-      console.log('hava a error');
-    }
-  });
+            initMapPage(data);//启动页面
+            //map.setFitView();//设置地图合适的视角
+        },
+        error: function(e) {
+            //...
+            $('#loadBox').hide();
+            console.log('hava a error');
+        }
+    });
 }
 
+/**
+ * 地图初始页面
+ * @param data
+ */
+function initMapPage(data) {
+    var iconTheme = 'fresh';//图标主题
+    var iconStyles = simpleMarker.getBuiltInIconStyles(iconTheme);//内置的样式
 
+    if(supplierMarkers){
+        map.remove(supplierMarkers);//删除之前的供货商marker
+    }
 
-function initPage(SimpleMarker, SimpleInfoWindow, data) {
-  var iconTheme = 'fresh';//图标主题
-  var iconStyles = SimpleMarker.getBuiltInIconStyles(iconTheme);//内置的样式
-  
-  if(supplierMarkers){
-    map.remove(supplierMarkers);//删除之前的供货商marker
-  }
+    for(var i = 0; i < data.length; i += 1){
+        data[i].iconTheme = iconTheme;
+        data[i].iconStyle = 'darkyellow';
 
-  for(var i = 0; i < data.length; i += 1){
-    data[i].iconTheme = iconTheme;
-    data[i].iconStyle = 'darkyellow';
+        var sMarker = createSimpleMarker(data[i]);
+        supplierMarkers.push(sMarker);
 
-    var simpleMarker = createSimpleMarker(SimpleMarker, data[i]);
-    supplierMarkers.push(simpleMarker);
-    simpleMarker.data=data[i];
-    simpleMarker.SimpleInfoWindow=SimpleInfoWindow;
-    simpleMarker.on('click',markerClick,{msg:123});
-  }
-  //map.setFitView();
+        sMarker.data=data[i];
+        sMarker.on('click',markerClick);//添加点击事件
+    }
+
+    createSupplier(data);//生成html数据
+    createSupplierMore(data);//生成html数据
+    //map.setFitView();
 }
 
 /**
  * 创建Marker
- * @param  {[type]} SimpleMarker [description]
  * @param  {[type]} data         [description]
  * @return {[type]}              [description]
  */
-var createSimpleMarker = function(SimpleMarker, data) {
+var createSimpleMarker = function(data) {
   //创建SimpleMarker实例
-  var simpleMarker =  new SimpleMarker({
+  var sMarker =  new simpleMarker({
       //前景文字
       //iconLabel: data.name,
       //图标主题
@@ -199,7 +227,7 @@ var createSimpleMarker = function(SimpleMarker, data) {
         },
   });
 
-  return simpleMarker;
+  return sMarker;
 }
 
 /**
@@ -208,21 +236,47 @@ var createSimpleMarker = function(SimpleMarker, data) {
  * @return {[type]}   [description]
  */
 function markerClick(e){
-  var _supplierDetailHeight = $('#supplierDetail').height();
-  $('#container').height(currentHeight-_supplierDetailHeight);
-  $('#detailName').text(e.target.data.name);
-  $('#detailImg').prop('src', e.target.data.img);
-  var priceDom = '<span>￥' + e.target.data.price + '</span>';
-  if(e.target.data.del) priceDom += '<del>￥' + e.target.data.del
-  
-  $('#detailPrice').html(priceDom);
-  $('#detailAddr').text(e.target.data.addr);
-    $('#supplierDetail').data('sposi', e.target.data.center);
-  
-  $(".sidebar-right").show();
-  $(".foodmapFooter").hide();
-  $("#supplierDetail").show();
-  //map.setCenter(e.target.getPosition());
+    var _data = [];
+    _data['name'] = e.target.data.name;
+    _data['img'] = e.target.data.img;
+    _data['price'] = e.target.data.price;
+    _data['del'] = e.target.data.del;
+    _data['addr'] = e.target.data.addr;
+    _data['posi'] = e.lnglat;//选择的供货商位置
+    showSupplierDetail(_data);
+}
+
+function supplierInfoClick(obj) {
+    var _data = [];
+    _data['name'] = obj.data.name;
+    _data['img'] = obj.data.img;
+    _data['price'] = obj.data.price;
+    _data['del'] = obj.data.del;
+    _data['addr'] = obj.data.addr;
+    _data['posi'] = obj.getPosition();
+    showSupplierDetail(_data);
+}
+
+function showSupplierDetail(data) {
+    var _supplierDetailHeight = $('#supplierDetail').height();
+    $('#container').height(currentHeight-_supplierDetailHeight);
+    $('#detailName').text(data.name);
+    $('#detailImg').prop('src', data.img);
+    var priceDom = '<span>￥' + data.price + '</span>';
+    if(data.del) priceDom += '<del>￥' + data.del
+
+    $('#detailPrice').html(priceDom);
+    $('#detailAddr').text(data.addr);
+
+    $("#container").show();//地图容器
+    $("#sidebarRight").show();//侧边栏
+    $("#mapSearch").show();//搜索框
+    $("#showMoreBtn").hide();//展开更多结果按钮
+    $("#showListBox").hide();//展示供货商列表
+    $("#showListMoreBox").hide();//展示供货商更多列表
+    $("#supplierDetail").show();//供货商详情
+
+    supplierPosition = data.posi;//选择的供货商位置
 }
 
 /**
@@ -232,7 +286,7 @@ function markerClick(e){
 function createSupplier(list){
 	var _html = '';
 	for(idx in list){
-		_html += '<li>';
+		_html += '<li data-markerid="'+list[idx].id+'">';
 		_html += '<div class="mapListfooter-list-left">';
 		_html += '<img src="'+list[idx].img+'"/>';
 		_html += '</div>';
@@ -257,7 +311,7 @@ function createSupplier(list){
 function createSupplierMore(list){
 	var _html = '';
 	for(idx in list){
-		_html += '<li>';
+		_html += '<li data-markerid="'+list[idx].id+'">';
 		_html += '<div class="mapend-list-left">';
 		_html += '<img src="'+list[idx].img+'"/>';
 		_html += '</div>';
@@ -271,50 +325,55 @@ function createSupplierMore(list){
 		_html += '</div>';
 		_html += '</li>';
 	}
-	
-	$('#supplierMore').append(_html);
+
+    supplierMore.append(_html);
 }
 
 /**
  * 获取供货商数据事件
  */
 function getSupplierDataEvent(){
-	$(".mapend").hide();
-	$(".foodmapFooter").show();
-	$(".map-search").show();
-	$("#container").show();
-	$(".sidebar-right").show();
-	$("#supplierDetail").hide();
+    $("#container").show();//地图容器
+    $("#sidebarRight").show();//侧边栏
+    $("#mapSearch").show();//搜索框
+    $("#showMoreBtn").show();//展开更多结果按钮
+    $("#showListBox").hide();//展示供货商列表
+    $("#showListMoreBox").hide();//展示供货商更多列表
+    $("#supplierDetail").hide();//供货商详情
+    
 	Height = $("body").height()-$(".foodmapFooter").height();
 	$("#container").css("height",Height+"px");
 }
 
 function createNavPath() {
-    var sPosi = $('#supplierDetail').data('sposi').split(',');
+    //var s_lnglat = $('#supplierDetail').data('lnglat').split(',');
 
     //步行导航
     AMap.service(["AMap.Walking"], function() {
-        var MWalk = new AMap.Walking({
+        var walking = new AMap.Walking({
             map: map,
             //panel: "panel"
         }); //构造路线导航类
 
-
-
         //根据起终点坐标规划步行路线
-        MWalk.search([currentPosition.lng,currentPosition.lat], [sPosi[0],sPosi[1]], function(status, result){
+        /*walking.search([currentPosition.lng,currentPosition.lat], [sPosi[0],sPosi[1]], function(status, result){
             if(status == 'complete'){
                 console.log('路线规划成功!');
             }
             console.log(result);
 
+        });*/
+
+        walking.searchOnAMAP({
+            origin:currentPosition,
+            destination:supplierPosition
         });
     });
-    AMap.service(["AMap.Walking"], function() {
-        var MWalk = new AMap.Walking({
-            map: map,
-            //panel: "panel"
-        }); //构造路线导航类
-        MWalk.setMap(null);
+}
+
+function reGeolocation() {
+    $('#loadBox').show();
+    geolocationObj.getCurrentPosition(function (status,result) {
+
     });
 }

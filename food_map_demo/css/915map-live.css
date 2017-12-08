@@ -39,7 +39,7 @@
 	top: -35px;
 	width:76px;
 	height:76px;
-	z-index: 2;
+	z-index: 999;
 }
 .map-liveprice{
 	margin-bottom: 8px;

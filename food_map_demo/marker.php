@@ -24,7 +24,7 @@ echo json_encode(getGridLngLats($_GET['posi']));
 
 function getGridLngLats($center)
 {
-	$_num = 4;
+	$_num = 10;
 	$_posi = explode(',', $center);
 
 	$_markers = array();
@@ -37,6 +37,7 @@ function getGridLngLats($center)
 	$data = array();
 	foreach ($_markers as $k => $v) {
 		$data[] = array(
+			"id" => $k,
 			"name" => "和谐广场".$k,
 			"center" => $v,
 			'img' => 'img/tupian.png',
