@@ -24,7 +24,7 @@ echo json_encode(getGridLngLats($_GET['posi']));
 
 function getGridLngLats($center)
 {
-	$_num = 10;
+	$_num = 4;
 	$_posi = explode(',', $center);
 
 	$_markers = array();

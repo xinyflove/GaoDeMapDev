@@ -1,9 +1,19 @@
 var currentHeight = $(window).height();//当前浏览器高度
 var showListUl = $('#target');//显示供货商列表信息
 var supplierMore = $('#supplierMore');//显示更多供货商列表信息
-//地图对象、定位标注对象、当前位置、simpleMarker对象、simpleInfoWindow对象、定位对象
-var map, geolocationMarker, currentPosition,supplierPosition,simpleMarker,simpleInfoWindow,geolocationObj;
+var map,//地图对象
+    geolocationMarker,//定位标注对象
+    currentPosition,//当前位置
+    currentAddr,//当前位置名称
+    supplierPosition,//选中供货商位置
+    simpleMarker,//simpleMarker对象
+    simpleInfoWindow,//simpleInfoWindow对象
+    geolocationObj;//定位对象
+
 var supplierMarkers = [];//供货商标注对象数组
+var searchType = 'all';
+var page = 1;
+
 map = new AMap.Map('container',{
     zoom: 18,
 });
@@ -49,6 +59,7 @@ AMapUI.loadUI([
     }
 );
 
+//绑定事件
 $(function () {
     $('.supplier-list').on('click',"li",function(ev){
         var markerId = $(this).data('markerid');
@@ -57,6 +68,11 @@ $(function () {
     $('.amap-geo').on('click',function () {
         $('#loadBox').show();
     })
+    $('#searchBtn').on('click',function () {
+        //获取供货商数据
+        $('#loadBox').show();
+        getSupplierList();
+    });
 });
 
 /**
@@ -119,8 +135,9 @@ function getGeocodernAddress(posi){
                 content: '<div id="geolocationMarker">' + address + '</div>'
             });
 
-            //获取根据当前定位信息的供货商数据
-            getSupplierList(posi, address);
+            currentAddr = address;
+            //获取供货商数据
+            getSupplierList();
             $('#locationInfo').text('当前位置：'+address);
         }
     });
@@ -152,14 +169,14 @@ function createLocationMarker(posi)
  * @param  {[type]} name [description]
  * @return {[type]}      [description]
  */
-function getSupplierList(posi, name)
+function getSupplierList()
 {
-    var _posi = [posi.lng, posi.lat].join(',')
-
+    var _posi = [currentPosition.lng, currentPosition.lat].join(',')
+    var searchWord = $("#searchWord").val();
     $.ajax({
         type: "GET",
         url: 'marker.php',
-        data: {posi:_posi,name:name},
+        data: {posi:_posi,name:currentAddr,search_type:searchType,search_word:searchWord,page:page},
         dataType: "json",
         success: function(data) {
             $('#loadBox').hide();
@@ -232,7 +249,7 @@ var createSimpleMarker = function(data) {
 }
 
 /**
- * marker点击事件函数
+ * 供货商marker点击事件函数
  * @param  {[type]} e [description]
  * @return {[type]}   [description]
  */
@@ -247,6 +264,10 @@ function markerClick(e){
     showSupplierDetail(_data);
 }
 
+/**
+ * 供货商列表点击函数
+ * @param obj
+ */
 function supplierInfoClick(obj) {
     var _data = [];
     _data['name'] = obj.data.name;
@@ -258,6 +279,10 @@ function supplierInfoClick(obj) {
     showSupplierDetail(_data);
 }
 
+/**
+ * 展示选中供货商详细数据
+ * @param data
+ */
 function showSupplierDetail(data) {
     var _supplierDetailHeight = $('#supplierDetail').height();
     $('#container').height(currentHeight-_supplierDetailHeight);
@@ -346,6 +371,9 @@ function getSupplierDataEvent(){
 	$("#container").css("height",Height+"px");
 }
 
+/**
+ * 创建路径规划路线
+ */
 function createNavPath() {
     //var s_lnglat = $('#supplierDetail').data('lnglat').split(',');
 
@@ -372,6 +400,9 @@ function createNavPath() {
     });
 }
 
+/**
+ * 调起高德地图导航
+ */
 function openGaoDeNav() {
     if(openGaoDeNavUrl)
     {

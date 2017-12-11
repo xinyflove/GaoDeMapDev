@@ -45,10 +45,10 @@ $output['map_key'] = 'a1dcdbc51efa1e086a14706ffa12a61a';
 		<!-- 侧边栏开始 -->
 		<div class="sidebar-right" id="sidebarRight">
 			<ul>
-				<li><i class="iconfont icon-quanbu"></i></li>
-				<li><i class="iconfont icon-meishi"></i></li>
-				<li><i class="iconfont icon-huodong"></i></li>
-				<li><i class="iconfont icon-zhibo"></i></li>
+				<li data-type="all" class="active"><i class="iconfont icon-quanbu"></i></li>
+				<li data-type="food"><i class="iconfont icon-meishi"></i></li>
+				<li data-type="activity"><i class="iconfont icon-huodong"></i></li>
+				<li data-type="live"><i class="iconfont icon-zhibo"></i></li>
 			</ul>
 		</div>
 		<!-- 侧边栏结束 -->
@@ -59,10 +59,10 @@ $output['map_key'] = 'a1dcdbc51efa1e086a14706ffa12a61a';
 				<div class="map-search-input-img">
 					<img src="img/left.png"/>
 				</div>
-				<input type="" name="" id="" value="" placeholder="美食"/>
+				<input type="text" name="" id="searchWord" value="" placeholder="请输入美食关键词"/>
 			</div>
 			<div class="map-search-btn">
-				<img src="img/search.png"/>
+				<img src="img/search.png" id="searchBtn"/>
 			</div>
 		</div>
 		<!-- 搜索框结束 -->

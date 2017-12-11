@@ -87,6 +87,9 @@ $(".mapend-banner").on("click",function(){
 
 //点击右侧
 $(".sidebar-right ul li").on("click",function(){
-	$(".sidebar-right ul li").removeClass("active")
-	$(this).addClass("active")
-})
+	$(".sidebar-right ul li").removeClass("active");
+	searchType = $(this).addClass("active").data('type');
+	//获取根据当前定位信息的供货商数据
+	$('#loadBox').show();
+	getSupplierList();
+});
