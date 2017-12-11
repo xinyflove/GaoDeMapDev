@@ -1,3 +1,7 @@
+<?php
+$output = [];
+$output['map_key'] = 'a1dcdbc51efa1e086a14706ffa12a61a';
+?>
 <!DOCTYPE html>
 <html>
 	<head>
@@ -117,7 +121,7 @@
 					<img src="img/tupian.png" id="detailImg"/>
 				</div>
 				<div class="mapLivefooter-top-right">
-					<img src="img/rose.png" class="mapLivefooter-top-rightPosition" onclick="javascript:createNavPath();"/>
+					<img src="img/rose.png" class="mapLivefooter-top-rightPosition" onclick="javascript:openGaoDeNav();"/>
 					<h2 id="detailName"></h2>
 					<p class="map-liveprice" id="detailPrice"></p>
 					<p class="map-livestate"></p>
@@ -126,7 +130,7 @@
 			</div>
 			<div class="mapLivefooter-bottom">
 				<a href="#">电话</a>
-				<a href="javascript:createNavPath();">导航</a>
+				<a href="javascript:openGaoDeNav();">导航</a>
 				<a href="#">立即购买</a>
 			</div>
 		</div>
@@ -136,11 +140,15 @@
 	<!--华东插件-->
 	<script src="https://cdn.bootcss.com/touchjs/0.2.14/touch.min.js"></script>
 	<!-- 引入高德地图JSAPI -->
-    <script src="https://webapi.amap.com/maps?v=1.4.0&key=a1dcdbc51efa1e086a14706ffa12a61a"></script>
+    <script src="https://webapi.amap.com/maps?v=1.4.0&key=<?php echo $output['map_key'];?>"></script>
     <!-- UI组件库 1.0 -->
     <script src="//webapi.amap.com/ui/1.0/main.js?v=1.0.11"></script>
-	<script type="text/javascript" src="js/915foodmap-all.js"></script>
+
 	<!-- 自定义js -->
+    <script type="text/javascript" src="js/915foodmap-all.js"></script>
+    <script>
+        var openGaoDeNavUrl = "./gaode_nav.php?key=<?php echo $output['map_key'];?>";
+    </script>
 	<script src="js/main.js"></script>
 	</body>
 </html>

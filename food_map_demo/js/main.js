@@ -80,6 +80,7 @@ function clickGeolocation() {
     //返回定位出错信息
     AMap.event.addListener(geolocationObj, 'error', function(data){
         $('#locationInfo').text('当前位置：定位失败');
+        $('#loadBox').hide();
         alert('定位失败');
     });
 }
@@ -371,6 +372,16 @@ function createNavPath() {
     });
 }
 
+function openGaoDeNav() {
+    if(openGaoDeNavUrl)
+    {
+        window.location.href = openGaoDeNavUrl+'&origin='+currentPosition+'&destination='+supplierPosition;
+    }
+}
+
+/**
+ * 刷新定位操作
+ */
 function reGeolocation() {
     $('#loadBox').show();
     geolocationObj.getCurrentPosition(function (status,result) {
