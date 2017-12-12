@@ -22,6 +22,8 @@ map = new AMap.Map('container',{
 AMap.plugin(['AMap.ToolBar','AMap.Geolocation','AMap.Geocoder'],
     function(){
         //map.addControl(new AMap.ToolBar());//集成了缩放、平移、定位等功能按钮在内的组合控件
+
+        clickGeolocation();//定位操作
     }
 );
 
@@ -54,19 +56,14 @@ AMapUI.loadUI([
         //....引用加载的UI....
         simpleMarker = SimpleMarker;
         simpleInfoWindow = SimpleInfoWindow;
-        clickGeolocation();//定位操作
     }
 );
 
 //绑定事件
 $(function () {
     $('.supplier-list').on('click',"li",function(ev){
-        var infoData = [];
-        /*var markerId = $(this).data('markerid');
-         supplierInfoClick(supplierMarkers[markerId]);*/
-        var item_id = $(this).data('item_id');
-        infoData['item_id'] = item_id;
-        supplierInfoClick(infoData);
+        var markerId = $(this).data('markerid');
+        supplierInfoClick(supplierMarkers[markerId]);
     });
     $('.amap-geo').on('click',function () {
         $('#loadBox').show();
@@ -233,24 +230,24 @@ function initMapPage(data) {
  * @return {[type]}              [description]
  */
 var createSimpleMarker = function(data) {
-    //创建SimpleMarker实例
-    var sMarker =  new simpleMarker({
-        //前景文字
-        //iconLabel: data.name,
-        //图标主题
-        iconTheme: data.iconTheme,
-        //背景图标样式
-        iconStyle: data.iconStyle,
-        //...其他Marker选项...，不包括content
-        map: map,
-        position: data.center.split(','),
-        label: {
-            content: '<p>'+data.name+'</p>',
-            offset: new AMap.Pixel(5, 45)
+  //创建SimpleMarker实例
+  var sMarker =  new simpleMarker({
+      //前景文字
+      //iconLabel: data.name,
+      //图标主题
+      iconTheme: data.iconTheme,
+      //背景图标样式
+      iconStyle: data.iconStyle,
+      //...其他Marker选项...，不包括content
+      map: map,
+      position: data.center.split(','),
+      label: {
+          content: '<p>'+data.name+'</p>',
+          offset: new AMap.Pixel(5, 45)
         },
-    });
+  });
 
-    return sMarker;
+  return sMarker;
 }
 
 /**
@@ -266,8 +263,6 @@ function markerClick(e){
     _data['del'] = e.target.data.del;
     _data['addr'] = e.target.data.addr;
     _data['posi'] = e.lnglat;//选择的供货商位置
-    _data['tel'] = e.target.data.tel;
-    _data['item_id'] = e.target.data.item_id;
     showSupplierDetail(_data);
 }
 
@@ -276,15 +271,14 @@ function markerClick(e){
  * @param obj
  */
 function supplierInfoClick(obj) {
-    /*var _data = [];
-     _data['name'] = obj.data.name;
-     _data['img'] = obj.data.img;
-     _data['price'] = obj.data.price;
-     _data['del'] = obj.data.del;
-     _data['addr'] = obj.data.addr;
-     _data['posi'] = obj.getPosition();
-     showSupplierDetail(_data);*/
-    window.location.href = itemDetailUrl + '?item_id=' + obj.item_id;
+    var _data = [];
+    _data['name'] = obj.data.name;
+    _data['img'] = obj.data.img;
+    _data['price'] = obj.data.price;
+    _data['del'] = obj.data.del;
+    _data['addr'] = obj.data.addr;
+    _data['posi'] = obj.getPosition();
+    showSupplierDetail(_data);
 }
 
 /**
@@ -297,9 +291,7 @@ function showSupplierDetail(data) {
     $('#detailName').text(data.name);
     $('#detailImg').prop('src', data.img);
     var priceDom = '<span>￥' + data.price + '</span>';
-    if(data.del) priceDom += '<del>￥' + data.del;
-    $('#detaliDel').prop('href', 'tel:'+data.tel);
-    $('#detailFastBuy').prop('href', itemDetailUrl+'?item_id='+data.item_id);
+    if(data.del) priceDom += '<del>￥' + data.del
 
     $('#detailPrice').html(priceDom);
     $('#detailAddr').text(data.addr);
@@ -320,24 +312,24 @@ function showSupplierDetail(data) {
  * @param list
  */
 function createSupplier(list){
-    var _html = '';
-    for(idx in list){
-        _html += '<li data-markerid="'+list[idx].id+'" data-item_id="'+list[idx].item_id+'">';
-        _html += '<div class="mapListfooter-list-left">';
-        _html += '<img src="'+list[idx].img+'"/>';
-        _html += '</div>';
-        _html += '<div class="mapListfooter-list-right">';
-        _html += '<h2>'+list[idx].name+'</h2>';
-        var _delPrice = '';
-        if(list[idx].del) _delPrice = '<del>￥'+list[idx].del+'</del>';
-        _html += '<p class="map-listprice"><span>￥'+list[idx].price+'</span>'+_delPrice+'</p>';
-        _html += '<p class="map-liststate">主播直播中</p>';
-        _html += '<p class="map-listdistance">'+list[idx].addr+'</p>';
-        _html += '</div>';
-        _html += '</li>';
-    }
-
-    showListUl.append(_html);
+	var _html = '';
+	for(idx in list){
+		_html += '<li data-markerid="'+list[idx].id+'">';
+		_html += '<div class="mapListfooter-list-left">';
+		_html += '<img src="'+list[idx].img+'"/>';
+		_html += '</div>';
+		_html += '<div class="mapListfooter-list-right">';
+		_html += '<h2>'+list[idx].name+'</h2>';
+		var _delPrice = '';
+		if(list[idx].del) _delPrice = '<del>￥'+list[idx].del+'</del>';
+		_html += '<p class="map-listprice"><span>￥'+list[idx].price+'</span>'+_delPrice+'</p>';
+		_html += '<p class="map-liststate">主播直播中</p>';
+		_html += '<p class="map-listdistance">'+list[idx].addr+'</p>';
+		_html += '</div>';
+		_html += '</li>';
+	}
+					
+	showListUl.append(_html);
 }
 
 /**
@@ -345,22 +337,22 @@ function createSupplier(list){
  * @param list
  */
 function createSupplierMore(list){
-    var _html = '';
-    for(idx in list){
-        _html += '<li data-markerid="'+list[idx].id+'" data-item_id="'+list[idx].item_id+'">';
-        _html += '<div class="mapend-list-left">';
-        _html += '<img src="'+list[idx].img+'"/>';
-        _html += '</div>';
-        _html += '<div class="mapend-list-right">';
-        _html += '<h2>'+list[idx].name+'</h2>';
-        var _delPrice = '';
-        if(list[idx].del) _delPrice = '<del>￥'+list[idx].del+'</del>';
-        _html += '<p class="mapend-listprice"><span>￥'+list[idx].price+'</span>'+_delPrice+'</p>';
-        _html += '<p class="mapend-liststate">主播直播中</p>';
-        _html += '<p class="mapend-listdistance">'+list[idx].addr+'</p>';
-        _html += '</div>';
-        _html += '</li>';
-    }
+	var _html = '';
+	for(idx in list){
+		_html += '<li data-markerid="'+list[idx].id+'">';
+		_html += '<div class="mapend-list-left">';
+		_html += '<img src="'+list[idx].img+'"/>';
+		_html += '</div>';
+		_html += '<div class="mapend-list-right">';
+		_html += '<h2>'+list[idx].name+'</h2>';
+		var _delPrice = '';
+		if(list[idx].del) _delPrice = '<del>￥'+list[idx].del+'</del>';
+		_html += '<p class="mapend-listprice"><span>￥'+list[idx].price+'</span>'+_delPrice+'</p>';
+		_html += '<p class="mapend-liststate">主播直播中</p>';
+		_html += '<p class="mapend-listdistance">'+list[idx].addr+'</p>';
+		_html += '</div>';
+		_html += '</li>';
+	}
 
     supplierMore.append(_html);
 }
@@ -376,9 +368,9 @@ function getSupplierDataEvent(){
     $("#showListBox").hide();//展示供货商列表
     $("#showListMoreBox").hide();//展示供货商更多列表
     $("#supplierDetail").hide();//供货商详情
-
-    Height = $("body").height()-$(".foodmapFooter").height();
-    $("#container").css("height",Height+"px");
+    
+	Height = $("body").height()-$(".foodmapFooter").height();
+	$("#container").css("height",Height+"px");
 }
 
 /**
@@ -396,12 +388,12 @@ function createNavPath() {
 
         //根据起终点坐标规划步行路线
         /*walking.search([currentPosition.lng,currentPosition.lat], [sPosi[0],sPosi[1]], function(status, result){
-         if(status == 'complete'){
-         console.log('路线规划成功!');
-         }
-         console.log(result);
+            if(status == 'complete'){
+                console.log('路线规划成功!');
+            }
+            console.log(result);
 
-         });*/
+        });*/
 
         walking.searchOnAMAP({
             origin:currentPosition,
@@ -416,7 +408,7 @@ function createNavPath() {
 function openGaoDeNav() {
     if(openGaoDeNavUrl)
     {
-        window.location.href = openGaoDeNavUrl+'?origin='+currentPosition+'&destination='+supplierPosition;
+        window.location.href = openGaoDeNavUrl+'&origin='+currentPosition+'&destination='+supplierPosition;
     }
 }
 

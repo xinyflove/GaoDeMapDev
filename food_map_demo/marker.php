@@ -24,7 +24,7 @@ echo json_encode(getGridLngLats($_GET['posi']));
 
 function getGridLngLats($center)
 {
-	$_num = 4;
+	$_num = 10;
 	$_posi = explode(',', $center);
 
 	$_markers = array();
@@ -34,6 +34,7 @@ function getGridLngLats($center)
 		$_markers[] = implode(',', array($_lng, $_lat));
 	}
 
+	$item_ids = array(165,166,167);
 	$data = array();
 	foreach ($_markers as $k => $v) {
 		$data[] = array(
@@ -44,6 +45,8 @@ function getGridLngLats($center)
 			'price' => 120,
 			'del' => 100,
 			'addr' => $_GET['name'].'内'.$k.'米',
+			'item_id'=> $item_ids[rand(0,2)],
+			'tel'=> 18653621610,
 		);
 	}
 

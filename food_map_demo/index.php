@@ -79,36 +79,38 @@ $output['map_key'] = 'a1dcdbc51efa1e086a14706ffa12a61a';
 		
 		<!-- 展示供货商更多列表开始 -->
 		<div class="mapend" id="showListMoreBox">
-			<div class="mapend-header">
-				<span><img src="img/left.png"/></span><h1>美食</h1><i><img src="img/search.png"/></i>
-			</div>
-			<div class="mapend-screen">
-				<ul>
-					<li>
-						<select name="">
-							<option value="">全部分类</option>
-						</select>
-					</li>
-					<li>
-						<select name="">
-							<option value="">5000米</option>
-						</select>
-					</li>
-					<li>
-						<select name="">
-							<option value="">智能排序</option>
-						</select>
-					</li>
-				</ul>
-			</div>
-			<div class="mapend-banner">
-				<img src="img/banner.png"/>
-			</div>
+            <div class="mapend-top">
+                <div class="mapend-header">
+                    <span><img src="img/left.png"/></span><h1>美食</h1><i><img src="img/search.png"/></i>
+                </div>
+                <div class="mapend-screen">
+                    <ul>
+                        <li>
+                            <select name="">
+                                <option value="">全部分类</option>
+                            </select>
+                        </li>
+                        <li>
+                            <select name="">
+                                <option value="">5000米</option>
+                            </select>
+                        </li>
+                        <li>
+                            <select name="">
+                                <option value="">智能排序</option>
+                            </select>
+                        </li>
+                    </ul>
+                </div>
+                <div class="mapend-banner">
+                    <img src="img/banner.png"/>
+                </div>
+                <div class="mapend-list-title">
+                    <h2 id="locationInfo"></h2>
+                    <img src="img/shuaxin.png" alt="" onclick="reGeolocation();" />
+                </div>
+            </div>
 			<div class="mapend-list">
-				<div class="mapend-list-title">
-					<h2 id="locationInfo"></h2>
-					<img src="img/shuaxin.png" alt="" onclick="reGeolocation();" />
-				</div>
 				<ul id="supplierMore" class="supplier-list"></ul>
 			</div>
 		</div>
@@ -147,7 +149,10 @@ $output['map_key'] = 'a1dcdbc51efa1e086a14706ffa12a61a';
 	<!-- 自定义js -->
     <script type="text/javascript" src="js/915foodmap-all.js"></script>
     <script>
-        var openGaoDeNavUrl = "./gaode_nav.php?key=<?php echo $output['map_key'];?>";
+        var supplierDataUrl = "./marker.php";
+        var iconLocationImg = "img/icon_location.png";
+        var openGaoDeNavUrl = "./gaode_nav.php";
+		var itemDetailUrl = "./item_detail.php";
     </script>
 	<script src="js/main.js"></script>
 	</body>

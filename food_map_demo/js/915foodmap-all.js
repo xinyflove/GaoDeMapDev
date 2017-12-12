@@ -53,7 +53,7 @@ $(".foodmapFooter").on("click",function(){
 			y=0;
 			locy=0
 			dy=0
-		}else if(293+dy+ev.y>660){
+		}else if(293+dy+ev.y>450){
 			locy=0
 			$(".foodmapFooter").show();
 			$(".mapListfooter").hide();
